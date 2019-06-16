@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form action="/jchat/reg" method="post" name="loginForm">
+    <form id="app">
       <table cellpadding="3">
         <tr>
           <th colspan="2">{{$t("signing_up")}}</th>
@@ -8,13 +8,36 @@
         <tr>
           <td>{{$t("email")}}:</td>
           <td>
-            <input :placeholder="$t('email')" name="nickname" type="text" value=""/>
+            <label>
+              <input
+                :placeholder="$t('email')"
+                name="nickname"
+                type="text"
+                v-model.trim="usr_email"/>
+            </label>
           </td>
         </tr>
         <tr>
           <td>{{$t("password")}}:</td>
           <td>
-            <input :placeholder="$t('password')" name="password" type="password" value=""/>
+            <label>
+              <input
+                :placeholder="$t('password')"
+                name="password"
+                type="text"
+                v-model="usr_pass"/>
+            </label>
+          </td>
+        </tr>
+        <tr>
+          <td>{{$t("password")}}:</td>
+          <td>
+            <label>
+              <input
+                :placeholder="$t('password')"
+                name="password"
+                type="text" v-model="rep_pass"/>
+            </label>
           </td>
         </tr>
         <tr>
@@ -36,31 +59,33 @@
 </template>
 
 <script>
-  import {User} from '../../core/model/user';
   import {HTTP} from '../../core/constants/api.service';
 
   export default {
     name: 'SignUp',
-    props: {},
+    data() {
+      return {
+        usr_email: '',
+        usr_pass: '',
+        rep_pass: ''
+      }
+    },
     methods: {
-      onregister: () => {
-        const usr = new User();
-        usr.firstName = 'denis';
-        usr.lastName = 'karzykin';
-        usr.email = 'd.karzykin@oblakogroup.ru';
-
-        HTTP.post('sign_up', {crossDomain: true}, {
-          body: {
-            firstName: usr.firstName,
-            lastName: usr.lastName,
-            email: usr.email,
-          },
-        })
-          .then((response) => {
-            console.log(response);
-          });
+      onregister: function () {
+        //todo: add field validation
+        if (this.usr_pass === this.rep_pass) {
+          // usr.firstName = 'denis';
+          // usr.lastName = 'Denis1996';
+          // usr.email = 'd.karzykin@oblakogroup.ru';
+          HTTP.post('sign_up', {email: this.usr_email, firstPassword: this.usr_pass})
+            .then((response) => {
+              console.log(response);
+            });
+        } else {
+          alert("passwords are different")
+        }
       },
-      get: () => {
+      get: function () {
         HTTP.get('get')
           .then((response) => {
             console.log(response);
