@@ -5,10 +5,13 @@ import VueI18n from 'vue-i18n';
 import routes from './app/routes';
 import languages from './app/i18n';
 import './registerServiceWorker';
+import Logger from './app/logger';
+import 'reflect-metadata';
 
 Vue.config.productionTip = false;
 Vue.use(VueRouter);
 Vue.use(VueI18n);
+Vue.use(Logger);
 
 const i18n = new VueI18n({
   locale: 'ru',
