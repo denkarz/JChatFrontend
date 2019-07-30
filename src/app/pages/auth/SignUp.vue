@@ -17,6 +17,9 @@
                 v-model.trim="user.email"
                 v-on:keyup.enter="onedit"/>
             </label>
+            <div class="error" v-if="validation_errors.has('emailError')">
+              {{$t(validation_errors.get('emailError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -27,9 +30,12 @@
                 :placeholder="$t('password')"
                 name="password"
                 type="password"
-                v-model="password"
+                v-model="user.password"
                 v-on:keyup.enter="onedit"/>
             </label>
+            <div class="error" v-if="validation_errors.has('passwordError')">
+              {{$t(validation_errors.get('passwordError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -44,6 +50,9 @@
                 v-on:keyup.enter="onedit"
               />
             </label>
+            <div class="error" v-if="validation_errors.has('passwordError')">
+              {{$t(validation_errors.get('passwordError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -78,6 +87,9 @@
                 v-model.trim="user.firstName"
                 v-on:keyup.enter="onregister"/>
             </label>
+            <div class="error" v-if="validation_errors.has('firstNameError')">
+              {{$t(validation_errors.get('firstNameError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -91,6 +103,16 @@
                 v-model.trim="user.lastName"
                 v-on:keyup.enter="onregister"/>
             </label>
+            <div class="error" v-if="validation_errors.has('lastNameError')">
+              {{$t(validation_errors.get('lastNameError'))}}
+            </div>
+            <label>
+              <input
+                hidden
+                name="nickname"
+                type="text"
+                v-model.trim="user.nickname"/>
+            </label>
           </td>
         </tr>
         <tr>
@@ -103,6 +125,9 @@
                 type="date"
                 v-model="user.birthDate" v-on:keyup.enter="onregister"/>
             </label>
+            <div class="error" v-if="validation_errors.has('birthDateError')">
+              {{$t(validation_errors.get('birthDateError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -154,21 +179,29 @@
       return {
         set_additional_info: false,
         user: new User(),
-        password: '',
-        repeat_password: '',
+        validation_errors: new Map(),
+        repeat_password: null,
         gender: Gender,
       };
     },
     methods: {
       onedit() {
-        // todo: add field validation
-        if (this.password === this.repeat_password) {
-          HTTP.get('has_mail', {params: {email: this.user.email}})
+        if (this.user.password === this.repeat_password) {
+          HTTP.post('auth/registration_setup', {email: this.user.email, password: this.user.password})
             .then((response) => {
               if (response.status === 200) {
                 this.$logger.log(response.data);
                 this.set_additional_info = true;
                 this.repeat_password = '';
+              }
+            })
+            .catch((error) => {
+              if (error.response.status === 409) {
+                this.validation_errors = new Map();
+                const keys = Object.keys(error.response.data);
+                for (const key of keys) {
+                  this.validation_errors.set(key, error.response.data[key]);
+                }
               }
             });
         } else {
@@ -176,12 +209,21 @@
         }
       },
       onregister() {
-        // todo: add field validation
-        HTTP.post('sign_up', JSON.parse(this.user))
+        this.user.nickname = "test";
+        HTTP.post('auth/sign_up', this.user)
           .then((response) => {
             if (response.status === 200) {
               this.$logger.log(response.data);
-              this.$router.push({name: 'Profile', params: {nickname: response.data.nickname}});
+              this.$router.push({name: 'Profile', params: {id: response.data.nickname}});
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 409) {
+              this.validation_errors = new Map();
+              const keys = Object.keys(error.response.data);
+              for (const key of keys) {
+                this.validation_errors.set(key, error.response.data[key]);
+              }
             }
           });
       },
@@ -190,5 +232,5 @@
 </script>
 
 <style scoped>
-
+  @import "../../../styles/common.less";
 </style>

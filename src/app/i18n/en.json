@@ -21,5 +21,19 @@
   "online": "Online",
   "offline": "Offline",
   "edit": "Edit",
-  "editing": "Editing"
+  "editing": "Editing",
+  "birth_date_should_be_entered": "Birth date should be entered",
+  "first_name_should_be_entered": "First name should be entered",
+  "last_name_should_be_entered": "Last name should be entered",
+  "nick_name_should_be_entered": "Nickname should be entered",
+  "password_should_be_entered": "Password should be entered",
+  "email_should_be_entered": "E-mail should be entered",
+  "email_isnt_correct": "Email isn't correct",
+  "first_name_size_is_less_then_2": "First name is shorter then 2 chars",
+  "last_name_size_is_less_then_2": "Last name is shorter then 2 chars",
+  "nick_name_size_is_less_then_3": "Nickname is shorter then 2 chars",
+  "password_must_be_8": "Password must be 8+ chars, has at least one uppercase char, one lowercase char and one digit",
+  "must_be_in_past": "Must be in past",
+  "email_in_use": "Email in use",
+  "user_not_found": "User not found"
 }

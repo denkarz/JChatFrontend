@@ -187,7 +187,7 @@
 <script>
   import {HTTP} from '../../core/constants/api.service';
   import {User} from '../../core/model/user';
-  import {plainToClass} from "class-transformer";
+  import {plainToClass} from 'class-transformer';
   import {Gender} from '../../core/model/gender';
 
   export default {
@@ -201,10 +201,11 @@
         gender: Gender,
       };
     },
-    beforeCreate() {
+    beforeMount() {
       this.$logger.setPrefix('Profile');
+      const id = this.$route.params.id;
       // todo: add field validation
-      HTTP.get('profile', {params: {id: '0d869bc4-44e4-4aa1-8606-650e2d5c8e99'}})
+      HTTP.get('user/profile', {params: {id}})
         .then((response) => {
           this.user = plainToClass(User, response.data);
           this.$logger.log(this.user);
@@ -215,14 +216,13 @@
       onedit() {
         alert('not supported yet');
         this.show_edit = !this.show_edit;
-        this.$router.go(-1)
+        this.$router.go(-1);
       },
       onback() {
         this.show_edit = !this.show_edit;
-        this.$router.go(-1)
-      }
+        this.$router.go(-1);
+      },
     },
-    // 0d869bc4-44e4-4aa1-8606-650e2d5c8e99
   };
 </script>
 

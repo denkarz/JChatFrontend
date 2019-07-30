@@ -16,6 +16,9 @@
                 v-model.trim="user_email"
                 v-on:keyup.enter="onlogin"/>
             </label>
+            <div class="error" v-if="validation_errors.has('emailError')">
+              {{$t(validation_errors.get('emailError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -29,6 +32,9 @@
                 v-model="user_password"
                 v-on:keyup.enter="onlogin"/>
             </label>
+            <div class="error" v-if="validation_errors.has('passwordError')">
+              {{$t(validation_errors.get('passwordError'))}}
+            </div>
           </td>
         </tr>
         <tr>
@@ -54,18 +60,34 @@
     name: 'SignIn',
     data() {
       return {
-        user_email: '',
-        user_password: '',
-      };
+        user_email: null,
+        user_password: null,
+        validation_errors: new Map(),
+      }
     },
     props: {},
     methods: {
       onlogin() {
-        HTTP.post('sign_in', {email: this.user_email, password: this.user_password})
+        if (this.user_email === '') {
+          this.user_email = null;
+        }
+        if (this.user_password === '') {
+          this.user_password = null;
+        }
+        HTTP.post('auth/sign_in', {email: this.user_email, password: this.user_password})
           .then((response) => {
             if (response.status === 200) {
               this.$logger.log(response.data);
-              this.$router.push({name: 'Profile', params: {nickname: response.data.nickname}});
+              this.$router.push({name: 'Profile', params: {id: response.data.nickname}});
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 409) {
+              this.validation_errors = new Map();
+              const keys = Object.keys(error.response.data);
+              for (const key of keys) {
+                this.validation_errors.set(key, error.response.data[key]);
+              }
             }
           });
       },
@@ -73,4 +95,6 @@
   };
 </script>
 
-<style scoped></style>
+<style scoped>
+  @import "../../../styles/common.less";
+</style>

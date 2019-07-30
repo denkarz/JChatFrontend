@@ -21,5 +21,19 @@
   "online": "В сети",
   "offline": "Не в сети",
   "edit": "Редактировать",
-  "editing": "Редактирование"
+  "editing": "Редактирование",
+  "birth_date_should_be_entered": "Введите дату рождения",
+  "first_name_should_be_entered": "Введите имя",
+  "last_name_should_be_entered": "Введите фамилию",
+  "nick_name_should_be_entered": "Введите никнейм",
+  "password_should_be_entered": "Введите пароль",
+  "email_should_be_entered": "Введите эл. почту",
+  "email_isnt_correct": "Эл. почта введена неверно",
+  "first_name_size_is_less_then_2": "Имя должно содержать минимум 2 символа",
+  "last_name_size_is_less_then_2": "Фамилия должна содержать минимум 2 символа",
+  "nick_name_size_is_less_then_3": "Никнейнм должн содержать минимум 3 символа",
+  "password_must_be_8": "Пароль должен быть не короче 8 символов состоять из букв верхнего и нижнего регистра и иметь как минимум 1 цифру",
+  "must_be_in_past": "Дата рождения должна быть в прошлом",
+  "email_in_use": "Эл. почта уже занята другим пользоватеем",
+  "user_not_found": "Пользователь не найден"
 }
