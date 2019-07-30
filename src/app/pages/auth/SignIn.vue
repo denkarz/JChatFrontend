@@ -63,7 +63,7 @@
         user_email: null,
         user_password: null,
         validation_errors: new Map(),
-      }
+      };
     },
     props: {},
     methods: {

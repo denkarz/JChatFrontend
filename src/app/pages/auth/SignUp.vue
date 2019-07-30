@@ -209,7 +209,7 @@
         }
       },
       onregister() {
-        this.user.nickname = "test";
+        this.user.nickname = Math.floor(Math.random() * 999) + 1000;
         HTTP.post('auth/sign_up', this.user)
           .then((response) => {
             if (response.status === 200) {
