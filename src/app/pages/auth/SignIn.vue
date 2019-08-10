@@ -74,16 +74,19 @@
         if (this.user_password === '') {
           this.user_password = null;
         }
-        HTTP.post('auth/sign_in', {email: this.user_email, password: this.user_password})
+        this.validation_errors = new Map();
+        HTTP.auth_api.post('sign_in', {email: this.user_email, password: this.user_password})
           .then((response) => {
             if (response.status === 200) {
-              this.$logger.log(response.data);
-              this.$router.push({name: 'Profile', params: {id: response.data.nickname}});
+              this.$store.dispatch('set_jwt', response.headers.authorisation).then(() => {
+                this.$store.dispatch('set_user', this.$store.getters._jwt.user_id).then(() => {
+                  this.$router.push({name: 'Profile', params: {id: this.$store.getters.current_user.id}});
+                })
+              })
             }
           })
           .catch((error) => {
             if (error.response.status === 409) {
-              this.validation_errors = new Map();
               const keys = Object.keys(error.response.data);
               for (const key of keys) {
                 this.validation_errors.set(key, error.response.data[key]);

@@ -1,6 +1,7 @@
 {
   "back": "Back",
   "login": "Login",
+  "logout": "Logout",
   "sign_up": "Sign up",
   "signing_up": "Sign up",
   "page_not_found": "Page not found",
@@ -35,5 +36,22 @@
   "password_must_be_8": "Password must be 8+ chars, has at least one uppercase char, one lowercase char and one digit",
   "must_be_in_past": "Must be in past",
   "email_in_use": "Email in use",
-  "user_not_found": "User not found"
+  "user_not_found": "User not found",
+  "date": {
+    "month": {
+      "january": "january",
+      "february": "february",
+      "march": "march",
+      "april": "april",
+      "may": "may",
+      "june": "june",
+      "july": "july",
+      "august": "august",
+      "september": "september",
+      "october": "october",
+      "november": "november",
+      "december": "december"
+    },
+    "year": "year"
+  }
 }

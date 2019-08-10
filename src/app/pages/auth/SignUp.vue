@@ -186,8 +186,9 @@
     },
     methods: {
       onedit() {
+        this.validation_errors = new Map();
         if (this.user.password === this.repeat_password) {
-          HTTP.post('auth/registration_setup', {email: this.user.email, password: this.user.password})
+          HTTP.auth_api.post('/registration_setup', {email: this.user.email, password: this.user.password})
             .then((response) => {
               if (response.status === 200) {
                 this.$logger.log(response.data);
@@ -197,7 +198,6 @@
             })
             .catch((error) => {
               if (error.response.status === 409) {
-                this.validation_errors = new Map();
                 const keys = Object.keys(error.response.data);
                 for (const key of keys) {
                   this.validation_errors.set(key, error.response.data[key]);
@@ -210,16 +210,20 @@
       },
       onregister() {
         this.user.nickname = Math.floor(Math.random() * 999) + 1000;
-        HTTP.post('auth/sign_up', this.user)
+        this.validation_errors = new Map();
+        this.$logger.log(this.user, 'log', 'user');
+        HTTP.auth_api.post('/sign_up', this.user)
           .then((response) => {
             if (response.status === 200) {
-              this.$logger.log(response.data);
-              this.$router.push({name: 'Profile', params: {id: response.data.nickname}});
+              this.$store.dispatch('set_jwt', response.headers.authorisation).then(() => {
+                this.$store.dispatch('set_user', this.$store.getters._jwt.user_id).then(() => {
+                  this.$router.push({name: 'Profile', params: {id: this.$store.getters.current_user.id}});
+                })
+              })
             }
           })
           .catch((error) => {
             if (error.response.status === 409) {
-              this.validation_errors = new Map();
               const keys = Object.keys(error.response.data);
               for (const key of keys) {
                 this.validation_errors.set(key, error.response.data[key]);

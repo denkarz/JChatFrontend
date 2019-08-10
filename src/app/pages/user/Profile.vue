@@ -1,19 +1,9 @@
 <template>
-  <div>
+  <div v-if="user">
     <table cellpadding="3" v-if="!show_edit">
-      <form name="findForm">
-        <tr>
-          <td>
-            <input class="edit-field" id="nickname-id" name="nickname" placeholder="User Name" type="text" value=""/>
-          </td>
-          <td>
-            <input id="button-id" type="button" value="Find">
-          </td>
-        </tr>
-      </form>
       <tr>
-        <th colspan="2">{{$t("profile")}} <a
-          @click="show_edit=!show_edit" href="#">{{$t("edit")}}</a></th>
+        <th colspan="2">{{$t("profile")}} <a v-if="editable"
+                                             @click="show_edit=!show_edit" href="#">{{$t("edit")}}</a></th>
       </tr>
       <tr>
         <td>{{$t("first_name")}}:</td>
@@ -34,7 +24,7 @@
       <tr>
       <tr>
         <td>{{$t("birth_date")}}:</td>
-        <td>{{user.birthDate}}</td>
+        <td>{{user.formatted_birth_date()}}</td>
       </tr>
       <tr>
         <td>{{$t("gender")}}:</td>
@@ -194,23 +184,35 @@
     name: 'Profile',
     data() {
       return {
-        user: new User(),
+        route_id: '',
+        user: null,
         show_edit: false,
         password: '',
         repeat_password: '',
         gender: Gender,
       };
     },
-    beforeMount() {
+    computed: {
+      editable: function () {
+        return this.route_id === this.$store.getters.current_user.id;
+      }
+    },
+    mounted() {
       this.$logger.setPrefix('Profile');
-      const id = this.$route.params.id;
+
+      this.route_id = this.$route.params.id;
       // todo: add field validation
-      HTTP.get('user/profile', {params: {id}})
-        .then((response) => {
-          this.user = plainToClass(User, response.data);
-          this.$logger.log(this.user);
-          this.$logger.log(response);
-        });
+      if (this.route_id === this.$store.getters.current_user.id) {
+        this.user = this.$store.getters.current_user
+      } else {
+        console.log('else works');
+        HTTP.api.get('user/get', {params: {id: this.route_id}})
+          .then((response) => {
+            this.user = plainToClass(User, response.data);
+            this.$logger.log(this.user);
+            this.$logger.log(response);
+          });
+      }
     },
     methods: {
       onedit() {
