@@ -33,6 +33,7 @@ export const actions = {
         commit('LOGOUT', response.data);
       });
   },
+  // f
   set_user({commit}, payload: string): Promise<void | User> {
     return HTTP.api.get('user/get', {params: {id: payload}})
       .then((response) => {
