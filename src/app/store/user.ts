@@ -6,6 +6,7 @@ import {deleteCookie, parseJWT, putCookie} from '@/app/core/service/cookie';
 interface JWT {
   role: string[];
   user_id: string;
+  user_nick: string;
 }
 
 export const state = {
@@ -35,7 +36,7 @@ export const actions = {
   },
   // f
   set_user({commit}, payload: string): Promise<void | User> {
-    return HTTP.api.get('user/get', {params: {id: payload}})
+    return HTTP.api.get('user/get', {params: {id: payload, nickname: payload}})
       .then((response) => {
         commit('SET_USER', response.data);
       });

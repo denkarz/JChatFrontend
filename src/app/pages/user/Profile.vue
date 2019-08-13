@@ -30,7 +30,7 @@
         <td>{{$t("gender")}}:</td>
         <td>{{$t(user.gender.toString().toLowerCase())}}</td>
       </tr>
-      <tr>
+      <!--<tr>
         <th colspan="2">User's dialogs <a href="#">create</a></th>
       </tr>
       <tr>
@@ -39,9 +39,10 @@
           <a href="#">hardcode dialog title #2</a><br>
           <a href="#">hardcode dialog title #3</a><br>
         </td>
-      </tr>
+      </tr>-->
     </table>
 
+    <!-- edit user-->
     <table v-else>
       <tr>
         <th colspan="2">{{$t("editing")}}</th>
@@ -67,7 +68,7 @@
               :placeholder="$t('password')"
               name="password"
               type="password"
-              v-model="password"
+              v-model="user.password"
               v-on:keyup.enter="onedit"/>
           </label>
         </td>
@@ -133,7 +134,9 @@
               :placeholder="$t('birth_date')"
               name="birth_date"
               type="date"
-              v-model="user.birthDate" v-on:keyup.enter="onedit"/>
+              :value="user.birthDate.split('T')[0]"
+              @input="user.update_bd($event.target.value)"
+              v-on:keyup.enter="onedit"/>
           </label>
         </td>
       </tr>
@@ -145,7 +148,7 @@
               :placeholder="$t('male')"
               name="male"
               type="radio"
-              v-bind:value="gender.MALE" v-model="user.gender"/>
+              v-bind:value="gender[gender.MALE]" v-model="user.gender"/>
             <label>{{$t("male")}}</label>
           </label>
           <label>
@@ -153,7 +156,7 @@
               :placeholder="$t('female')"
               name="female"
               type="radio"
-              v-bind:value="gender.FEMALE" v-model="user.gender"
+              v-bind:value="gender[gender.FEMALE]" v-model="user.gender"
             />
             <label>{{$t("female")}}</label>
           </label>
@@ -171,6 +174,43 @@
         </td>
       </tr>
     </table>
+
+    <!--      admin section-->
+    <table v-if="is_admin">
+      <tr>
+        <th colspan="2">admin section</th>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div :key="usr.id" v-for="usr in all_users">
+            <li>{{`${usr.firstName} ${usr.lastName} [${usr.roles},]`}}<a
+              @click="edit_roles=!edit_roles selected_user=usr "
+              href="#">
+              {{$t("edit")}}</a></li>
+            <table v-if="edit_roles&& selected_user.id === usr.id">
+              <tr>
+                <td>{{$t("nick_name")}}:</td>
+                <td>{{usr.nickname}}</td>
+              </tr>
+              <tr>
+                <td>roles:</td>
+                <td>
+                  <div :key="index" v-for="(role, index) of roles">
+                    <label> {{role}}
+                      <input
+                        @change="changeRoles(usr)"
+                        name="role"
+                        type="checkbox"
+                        v-bind:value="role" v-model="usr.roles">
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </td>
+      </tr>
+    </table>
   </div>
 </template>
 
@@ -179,6 +219,7 @@
   import {User} from '../../core/model/user';
   import {plainToClass} from 'class-transformer';
   import {Gender} from '../../core/model/gender';
+  import {Role} from '../../core/model/role';
 
   export default {
     name: 'Profile',
@@ -187,14 +228,24 @@
         route_id: '',
         user: null,
         show_edit: false,
-        password: '',
         repeat_password: '',
         gender: Gender,
+        //////
+        ///
+        //
+        all_users: [],
+        selected_user: User,
+        roles: Object.keys(Role).filter(key => !isNaN(Number(Role[key]))),
+        edit_roles: false
       };
     },
     computed: {
       editable: function () {
-        return this.route_id === this.$store.getters.current_user.id;
+        return this.route_id === this.$store.getters.current_user.nickname;
+      },
+      is_admin: function () {
+        this.$logger.log(this.roles);
+        return this.user.roles.includes("ADMIN");
       }
     },
     mounted() {
@@ -202,28 +253,77 @@
 
       this.route_id = this.$route.params.id;
       // todo: add field validation
-      if (this.route_id === this.$store.getters.current_user.id) {
+      if (this.route_id === this.$store.getters.current_user.nickname ||
+        this.route_id === this.$store.getters.current_user.id) {
         this.user = this.$store.getters.current_user
       } else {
         console.log('else works');
-        HTTP.api.get('user/get', {params: {id: this.route_id}})
+        HTTP.api.get('user/get', {params: {id: this.route_id, nickname: this.route_id}})
           .then((response) => {
             this.user = plainToClass(User, response.data);
             this.$logger.log(this.user);
-            this.$logger.log(response);
           });
       }
+      /// admin section
+      // console.log(this.user.roles[0])
+      // if (this.user.roles[this.roles.ADMIN]!== undefined) {
+      HTTP.api.get('admin/get_all_users')
+        .then((response) => {
+          this.all_users = plainToClass(User, response.data);
+        });
+      // }
     },
     methods: {
       onedit() {
-        alert('not supported yet');
-        this.show_edit = !this.show_edit;
-        this.$router.go(-1);
+        this.validation_errors = new Map();
+        this.$logger.log(this.user, 'log', 'user');
+        if (this.user.password === this.repeat_password) {
+          HTTP.api.post('/user/update', this.user)
+            .then((response) => {
+              if (response.status === 200) {
+                this.$store.dispatch('set_jwt', response.headers.authorisation).then(() => {
+                  this.$store.dispatch('set_user', this.$store.getters._jwt.user_id).then(() => {
+                    this.repeat_password = '';
+                    this.show_edit = false;
+                    this.$router.push({name: 'Profile', params: {id: this.$store.getters.current_user.nickname}});
+                  })
+                })
+              }
+            })
+            .catch((error) => {
+              if (error.response.status === 409) {
+                const keys = Object.keys(error.response.data);
+                for (const key of keys) {
+                  this.validation_errors.set(key, error.response.data[key]);
+                }
+              }
+            });
+        }
+        // this.show_edit = !this.show_edit;
+        // this.$router.go(-1);
       },
       onback() {
         this.show_edit = !this.show_edit;
         this.$router.go(-1);
       },
+      changeRoles(user) {
+        console.log(this.roles);
+        HTTP.api.post('/admin/update_roles', {id: user.id, roles: user.roles})
+          .then((response) => {
+            if (response.status === 200) {
+
+            }
+          })
+          .catch((error) => {
+            if (error.response.status === 409) {
+              const keys = Object.keys(error.response.data);
+              for (const key of keys) {
+                this.validation_errors.set(key, error.response.data[key]);
+              }
+            }
+          });
+        console.log(user.roles)
+      }
     },
   };
 </script>

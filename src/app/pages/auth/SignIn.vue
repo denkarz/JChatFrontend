@@ -80,7 +80,7 @@
             if (response.status === 200) {
               this.$store.dispatch('set_jwt', response.headers.authorisation).then(() => {
                 this.$store.dispatch('set_user', this.$store.getters._jwt.user_id).then(() => {
-                  this.$router.push({name: 'Profile', params: {id: this.$store.getters.current_user.id}});
+                  this.$router.push({name: 'Profile', params: {id: this.$store.getters._jwt.user_nick}});
                 })
               })
             }

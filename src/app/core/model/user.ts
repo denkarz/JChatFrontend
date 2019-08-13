@@ -1,5 +1,6 @@
 import {Gender} from '@/app/core/model/gender';
 import {pretty_short_date} from '@/app/core/service/date-time';
+import {Role} from '@/app/core/model/role';
 
 export class User {
   public id: string = '';
@@ -11,11 +12,15 @@ export class User {
   public gender: Gender = Gender.MALE;
   public age: number | null = null;
   public active: boolean = false;
-  public roles: string[] = [];
+  public roles: Role[] = [];
   public password: string | null = null;
 
   public formatted_birth_date() {
     return pretty_short_date(this.birthDate);
+  }
+
+  private update_bd(value: string | Date) {
+    this.birthDate = new Date(value).toISOString();
   }
 
 
