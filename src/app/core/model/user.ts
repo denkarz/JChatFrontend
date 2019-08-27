@@ -14,6 +14,7 @@ export class User {
   public active: boolean = false;
   public roles: Role[] = [];
   public password: string | null = null;
+  public activationCode: string | null = null;
 
   public formatted_birth_date() {
     return pretty_short_date(this.birthDate);

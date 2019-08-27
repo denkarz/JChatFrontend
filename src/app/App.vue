@@ -6,7 +6,7 @@
       <select v-model="$i18n.locale">
         <option :key="`Lang${i}`" :value="lang" v-for="(lang, i) in langs">{{ lang }}</option>
       </select>
-      <form name="findForm">
+      <form name="findForm" v-if="$store.getters._jwt.user_id">
         <tr>
           <td>
             <input class="edit-field" id="nickname-id" name="nickname" placeholder="User Name" type="text" value=""/>

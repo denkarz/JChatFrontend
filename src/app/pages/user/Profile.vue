@@ -2,8 +2,14 @@
   <div v-if="user">
     <table cellpadding="3" v-if="!show_edit">
       <tr>
-        <th colspan="2">{{$t("profile")}} <a v-if="editable"
-                                             @click="show_edit=!show_edit" href="#">{{$t("edit")}}</a></th>
+        <th colspan="2">{{$t("profile")}}
+          <a v-if="editable" @click="show_edit=!show_edit" href="#">{{$t("edit")}}</a>
+        </th>
+      </tr>
+      <tr v-if="is_activated">
+        <th colspan="2">{{$t("profile")}}
+          <a @click="updateActivation" href="#">{{$t("activate")}}</a>
+        </th>
       </tr>
       <tr>
         <td>{{$t("first_name")}}:</td>
@@ -184,7 +190,7 @@
         <td colspan="2">
           <div :key="usr.id" v-for="usr in all_users">
             <li>{{`${usr.firstName} ${usr.lastName} [${usr.roles},]`}}<a
-              @click="edit_roles=!edit_roles selected_user=usr "
+              @click="edit_roles=!edit_roles; selected_user=usr "
               href="#">
               {{$t("edit")}}</a></li>
             <table v-if="edit_roles&& selected_user.id === usr.id">
@@ -243,6 +249,9 @@
       editable: function () {
         return this.route_id === this.$store.getters.current_user.nickname;
       },
+      is_activated: function () {
+        return this.$store.getters.current_user.activationCode;
+      },
       is_admin: function () {
         this.$logger.log(this.roles);
         return this.user.roles.includes("ADMIN");
@@ -265,15 +274,26 @@
           });
       }
       /// admin section
-      // console.log(this.user.roles[0])
-      // if (this.user.roles[this.roles.ADMIN]!== undefined) {
+      // console.log(this.user.roles[this.roles.ADMIN])
+      if (this.user.roles[this.roles.ADMIN]!== undefined) {
       HTTP.api.get('admin/get_all_users')
         .then((response) => {
           this.all_users = plainToClass(User, response.data);
         });
-      // }
+      }
     },
     methods: {
+      updateActivation() {
+        HTTP.api.post('/user/update_activation_code',  {id: this.$store.getters._jwt.user_id})
+          .catch((error) => {
+            if (error.response.status === 409) {
+              const keys = Object.keys(error.response.data);
+              for (const key of keys) {
+                this.validation_errors.set(key, error.response.data[key]);
+              }
+            }
+          });
+      },
       onedit() {
         this.validation_errors = new Map();
         this.$logger.log(this.user, 'log', 'user');
@@ -311,7 +331,11 @@
         HTTP.api.post('/admin/update_roles', {id: user.id, roles: user.roles})
           .then((response) => {
             if (response.status === 200) {
-
+              HTTP.api.get('user/get', {params: {id: this.route_id, nickname: this.route_id}})
+                .then((response) => {
+                  this.user = plainToClass(User, response.data);
+                  this.$logger.log(this.user);
+                });
             }
           })
           .catch((error) => {

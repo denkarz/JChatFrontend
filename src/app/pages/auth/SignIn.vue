@@ -48,6 +48,11 @@
             <router-link to="/signup">{{$t("sign_up")}}</router-link>
           </td>
         </tr>
+        <tr>
+          <td colspan="2">{{$t("forget_password")}}?
+            <router-link to="/forgot">{{$t("reset")}}</router-link>
+          </td>
+        </tr>
       </table>
     </form>
   </div>

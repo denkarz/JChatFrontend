@@ -27,6 +27,7 @@ export default i18n;
 
 const router = new VueRouter({
   mode: 'history',
+  base: process.env.BASE_URL,
   routes: routes.routes,
 });
 
